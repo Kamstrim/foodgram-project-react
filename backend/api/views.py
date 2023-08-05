@@ -34,7 +34,7 @@ from .serializers import (
     RecipeReadSerializer,
     ShoppingCartSerializer,
     TagsSerializer,
-    CustomUserSerializer,
+    CustomUserSerializer, SubscribeListSerializer,
 )
 from .utils import create_model_instance, delete_model_instance
 
@@ -232,3 +232,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def remove_from_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         return self.delete_model_instance(request, ShoppingCart, recipe, 'Данного рецепта нет в корзине')
+
