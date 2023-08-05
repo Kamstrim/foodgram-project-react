@@ -330,7 +330,10 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return tags
 
     def validate_recipeingredients(self, recipeingredients):
-        ingredients_list = [ingredient.get('id') for ingredient in recipeingredients]
+        ingredients_list = [
+            ingredient.get('id')
+            for ingredient in recipeingredients
+        ]
         if len(set(ingredients_list)) != len(ingredients_list):
             raise serializers.ValidationError(
                 'Вы пытаетесь добавить в рецепт два одинаковых ингредиента'

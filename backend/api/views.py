@@ -145,7 +145,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             shopping_list,
             content_type='text/plain'
         )
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        response[
+            'Content-Disposition'
+        ] = 'attachment; filename="shopping_list.txt"'
         return response
 
     @action(
@@ -178,7 +180,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @staticmethod
-    def delete_model_instance(self, request, model_class, recipe, error_message):
+    def delete_model_instance(
+            self,
+            request,
+            model_class,
+            recipe,
+            error_message
+    ):
         instance = get_object_or_404(
             model_class,
             user=request.user.id,
@@ -231,5 +239,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @add_to_cart.mapping.delete
     def remove_from_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        return self.delete_model_instance(request, ShoppingCart, recipe, 'Данного рецепта нет в корзине')
-
+        return self.delete_model_instance(
+            request,
+            ShoppingCart,
+            recipe,
+            'Данного рецепта нет в корзине'
+        )
