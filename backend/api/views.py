@@ -20,7 +20,6 @@ from .models import (
     RecipeIngredient,
     ShoppingCart,
     Tag,
-    Follow,
 )
 
 from .filters import IngredientFilter, RecipeFilter
