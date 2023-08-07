@@ -25,19 +25,16 @@ def create_model_instance(request, instance, serializer_name):
 def delete_model_instance(request, model_name, instance, error_message):
     """Удаление рецепта из избранного или из списка покупок."""
 
-    if not model_name.objects.filter(
-            user=request.user,
-            recipe=instance
-    ).exists():
+    model_instances = request.user.model_name.filter(
+        recipe=instance
+    )
+
+    if not model_instances.exists():
         return Response(
             {'errors': error_message},
             status=status.HTTP_400_BAD_REQUEST
         )
-
-    model_name.objects.filter(
-        user=request.user,
-        recipe=instance
-    ).delete()
+    model_instances.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 

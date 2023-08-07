@@ -10,8 +10,19 @@ from .models import (
     Tag,
 )
 
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    min_num = 1
+
+
+class RecipeAdmin(admin.ModelAdmin):
+    inlines = (RecipeIngredientInline,)
+
+
 admin.site.register(Follow)
-admin.site.register(Recipe)
+admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(FavoriteRecipe)
 admin.site.register(Ingredient)
 admin.site.register(RecipeIngredient)

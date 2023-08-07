@@ -18,10 +18,10 @@ from .models import (
     Ingredient,
     FavoriteRecipe,
     ShoppingCart,
+    MIN_VALUE,
+    MAX_VALUE,
 )
-
 from .utils import create_ingredients
-
 from users.models import REGEX, LIMIT_USERNAME
 
 User = get_user_model()
@@ -84,17 +84,20 @@ class SubscribeListSerializer(CustomUserSerializer):
 
     recipes_count = serializers.SerializerMethodField()
     recipes = SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta(CustomUserSerializer.Meta):
         fields = CustomUserSerializer.Meta.fields + (
             'recipes_count',
-            'recipes'
+            'recipes',
+            'is_subscribed'
         )
         read_only_fields = (
             'email',
             'username',
             'first_name',
-            'last_name'
+            'last_name',
+            'is_subscribed'
         )
 
     def validate(self, data):
@@ -183,7 +186,10 @@ class IngredientPostSerializer(serializers.ModelSerializer):
     """Сериализатор добавления ингредиентов при работе с рецептами."""
 
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        max_value=MIN_VALUE,
+        min_value=MAX_VALUE
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -309,7 +315,10 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField(max_length=None)
     author = CustomUserSerializer(read_only=True)
-    cooking_time = serializers.IntegerField(min_value=1)
+    cooking_time = serializers.IntegerField(
+        max_value=MIN_VALUE,
+        min_value=MAX_VALUE
+    )
 
     class Meta:
         model = Recipe
@@ -338,11 +347,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы пытаетесь добавить в рецепт два одинаковых ингредиента'
             )
-        for ingredient in recipeingredients:
-            if ingredient.get('amount') < 1:
-                raise serializers.ValidationError(
-                    'Количество не может быть меньше 1'
-                )
         return recipeingredients
 
     @transaction.atomic
@@ -350,10 +354,9 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         ingredients = validated_data.pop('recipeingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(
-            author=request.user,
+        recipe = request.user.recipes.create(
             **validated_data
-        )
+        ).create
         recipe.tags.set(tags)
         create_ingredients(ingredients, recipe)
         return recipe
@@ -363,9 +366,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('recipeingredients')
         tags = validated_data.pop('tags')
         instance.tags.set(tags)
-        RecipeIngredient.objects.filter(
-            recipe=instance
-        ).delete()
+        instance.recipeingredients.all().delete()
         super().update(instance, validated_data)
         create_ingredients(ingredients, instance)
         return instance

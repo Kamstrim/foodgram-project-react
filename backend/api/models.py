@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator, MinValueValidator
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 
 User = get_user_model()
@@ -11,6 +11,8 @@ LIMIT_TAG_COLOR = 7
 LIMIT_TAG_SLUG = 200
 LIMIT_RECIPE_NAME = 200
 REGEX = r'^[-a-zA-Z0-9_]+$'
+MIN_VALUE = 1
+MAX_VALUE = 32000
 
 
 class Ingredient(models.Model):
@@ -107,7 +109,8 @@ class Recipe(models.Model):
 
     cooking_time = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1, 'Должно быть больше 1')
+            MinValueValidator(MIN_VALUE, f'Должно быть больше {MIN_VALUE}'),
+            MaxValueValidator(MAX_VALUE, f'Должно быть меньше {MAX_VALUE}')
         ],
         verbose_name='время приготовления',
     )
@@ -138,7 +141,8 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1, 'Должно быть больше 1')
+            MinValueValidator(MIN_VALUE, f'Должно быть больше {MIN_VALUE}'),
+            MaxValueValidator(MAX_VALUE, f'Должно быть меньше {MAX_VALUE}')
         ],
         verbose_name='количество',
     )
@@ -258,3 +262,4 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.user} -> {self.author}"
+

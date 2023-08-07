@@ -4,7 +4,6 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -67,17 +66,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Follow.objects.get_or_create(
-                user=user,
-                author=author
-            )
+            user.follower.get_or_create(author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            Follow.objects.filter(
-                user=user,
-                author=author
-            ).delete()
+        if request.method == 'DELETE':
+            user.follower.filter(author=author).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
