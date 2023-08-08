@@ -1,28 +1,17 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.conf import settings
 from django.shortcuts import get_object_or_404
-
 from djoser.serializers import UserCreateSerializer, UserSerializer
-
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
+from users.models import LIMIT_USERNAME, REGEX
 
-from drf_extra_fields.fields import Base64ImageField
-
-from .models import (
-    RecipeIngredient,
-    Recipe,
-    Tag,
-    Ingredient,
-    FavoriteRecipe,
-    ShoppingCart,
-    MIN_VALUE,
-    MAX_VALUE,
-)
+from .models import (MAX_VALUE, MIN_VALUE, FavoriteRecipe, Ingredient, Recipe,
+                     RecipeIngredient, ShoppingCart, Tag)
 from .utils import create_ingredients
-from users.models import REGEX, LIMIT_USERNAME
 
 User = get_user_model()
 

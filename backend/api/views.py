@@ -3,37 +3,21 @@ from django.db.models import Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
-from .models import (
-    FavoriteRecipe,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    ShoppingCart,
-    Tag,
-)
-
 from .filters import IngredientFilter, RecipeFilter
+from .models import (FavoriteRecipe, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
 from .pagination import CustomPagination
 from .permissions import AuthorPermission
-from .serializers import (
-    CreateRecipeSerializer,
-    FavoriteSerializer,
-    IngredientsSerializer,
-    RecipeReadSerializer,
-    ShoppingCartSerializer,
-    TagsSerializer,
-    CustomUserSerializer, SubscribeListSerializer,
-)
+from .serializers import (CreateRecipeSerializer, CustomUserSerializer,
+                          FavoriteSerializer, IngredientsSerializer,
+                          RecipeReadSerializer, ShoppingCartSerializer,
+                          SubscribeListSerializer, TagsSerializer)
 from .utils import create_model_instance, delete_model_instance
 
 User = get_user_model()
