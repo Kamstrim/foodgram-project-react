@@ -66,6 +66,7 @@ jobs:
     needs:
       - build_backend_and_push_to_docker_hub
       - build_frontend_and_push_to_docker_hub
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     steps:
     - name: pull docker image
       uses: appleboy/ssh-action@master
@@ -76,7 +77,7 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latestgi
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
           sudo docker-compose stop
           sudo docker-compose rm -f backend frontend
     - name: docker-compose up
@@ -87,7 +88,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          sudo touch .env
+          rm .env
+          touch .env
           echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
           echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
