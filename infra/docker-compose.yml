@@ -12,25 +12,22 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
-    build: ../backend/
+    image: kamstrim/foodgram_backend
+    restart: always
     env_file: .env
     volumes:
-      - static:/static/
-      - media:/media/
+      - static:/app/static/
+      - media:/app/media/
     depends_on:
       - db
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: kamstrim/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
-    depends_on:
-      - db
   nginx:
     image: nginx:1.19.3
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
@@ -39,3 +36,4 @@ services:
       - media:/var/html/media/
     depends_on:
       - backend
+    restart: always

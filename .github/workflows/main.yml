@@ -75,11 +75,10 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          sudo docker pull kamstrim/foodgram_backend:latest
-          sudo docker pull kamstrim/foodgram_frontend:latest
-          cd infra/
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latestgi
           sudo docker-compose stop
-          sudo docker-compose rm backend
+          sudo docker-compose rm -f backend frontend
     - name: docker-compose up
       uses: appleboy/ssh-action@master
       with:
@@ -88,7 +87,6 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          cd infra/
           sudo touch .env
           echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
           echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
@@ -98,7 +96,10 @@ jobs:
           echo SECRET_KEY="${{ secrets.SECRET_KEY }}" >> .env
           echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
           echo DEBUG=True >> .env
-          sudo docker-compose up -d --build      
+          sudo docker-compose up -d
+          sudo docker-compose exec backend python manage.py makemigrations
+          sudo docker-compose exec -T backend python manage.py migrate --noinput
+          sudo docker-compose exec -T backend python manage.py collectstatic --no-input
 
   send_message:
     runs-on: ubuntu-latest
