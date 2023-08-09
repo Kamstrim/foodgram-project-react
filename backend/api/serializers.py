@@ -210,6 +210,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             'amount'
         )
 
+
 class RecipeReadSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра рецептов."""
 
