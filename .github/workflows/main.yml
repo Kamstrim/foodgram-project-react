@@ -81,9 +81,8 @@ jobs:
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml up -d
             sudo docker image prune --all --force
-            sudo docker-compose.production exec backend python manage.py makemigrations
-            sudo docker-compose.production exec -T backend python manage.py migrate --noinput
-            sudo docker-compose.production exec -T backend python manage.py collectstatic --no-input
+            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
+            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --no-input
 
   send_message:
     runs-on: ubuntu-latest
