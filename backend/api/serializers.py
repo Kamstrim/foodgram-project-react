@@ -67,13 +67,21 @@ class CustomUserSerializer(UserSerializer):
             'is_subscribed'
         )
 
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request.user.is_authenticated:
+            following = obj.following.filter(
+                user=request.user
+            ).exists()
+            return following
+        return False
+
 
 class SubscribeListSerializer(CustomUserSerializer):
     """Серилизатор подписок пользователя."""
 
     recipes_count = serializers.SerializerMethodField()
     recipes = SerializerMethodField()
-    is_subscribed = serializers.SerializerMethodField()
 
     class Meta(CustomUserSerializer.Meta):
         fields = CustomUserSerializer.Meta.fields + (
@@ -124,15 +132,6 @@ class SubscribeListSerializer(CustomUserSerializer):
             read_only=True
         )
         return serializer.data
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if request.user.is_authenticated:
-            following = obj.following.filter(
-                user=request.user
-            ).exists()
-            return following
-        return False
 
     def to_representation(self, instance):
         self.fields['is_subscribed'].context = self.context
