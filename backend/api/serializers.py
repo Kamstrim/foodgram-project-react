@@ -210,32 +210,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             'amount'
         )
 
-
-class CustomUserSerializer(UserSerializer):
-    """Сериализатор кастомной модели пользователя."""
-
-    is_subscribed = SerializerMethodField(read_only=True)
-
-    class Meta:
-        abstract = True
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed'
-        )
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        return (request.user.is_authenticated
-                and obj.following.filter(
-                    user=request.user
-                ).exists())
-
-
 class RecipeReadSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра рецептов."""
 
