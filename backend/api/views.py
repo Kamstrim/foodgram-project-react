@@ -3,6 +3,7 @@ from django.db.models import Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
@@ -23,8 +24,9 @@ from .utils import create_model_instance, delete_model_instance
 User = get_user_model()
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(UserViewSet):
     """Вьюсет User."""
+
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -36,9 +38,9 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated, ]
     )
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, pk):
         user = request.user
         author = self.get_object_or_404_by_id(pk)
 
@@ -58,14 +60,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['get'],
         permission_classes=[IsAuthenticated]
     )
     def subscriptions(self, request):
         user = request.user
         queryset = User.objects.filter(following__user=user)
         pages = self.paginate_queryset(queryset)
-        serializer = CustomUserSerializer(
+        serializer = SubscribeListSerializer(
             pages,
             many=True,
             context={'request': request}
