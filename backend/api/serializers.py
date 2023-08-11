@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -7,7 +6,6 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
-from users.models import LIMIT_USERNAME, REGEX
 
 from .models import (MAX_VALUE, MIN_VALUE, FavoriteRecipe, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
@@ -33,14 +31,6 @@ class CustomUserSerializer(UserSerializer):
         if self.context.get('request').user.is_anonymous:
             return False
         return obj.following.filter(user=request.user).exists()
-
-
-def validate_username_me(value):
-    if value == 'me':
-        raise ValidationError(
-            'Имя пользователя "me" запрещено'
-        )
-    return value
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
