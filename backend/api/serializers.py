@@ -16,6 +16,25 @@ from .utils import create_ingredients
 User = get_user_model()
 
 
+class CustomUserSerializer(UserSerializer):
+    """Серилизатор для кастомной модели пользователя."""
+
+    is_subscribed = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed'
+        )
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if self.context.get('request').user.is_anonymous:
+            return False
+        return obj.following.filter(user=request.user).exists()
+
+
 def validate_username_me(value):
     if value == 'me':
         raise ValidationError(
@@ -25,46 +44,13 @@ def validate_username_me(value):
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
-    """Сериализатор для создания пользователя."""
-
-    username = serializers.RegexField(
-        max_length=LIMIT_USERNAME,
-        required=True,
-        regex=REGEX
-    )
+    """ Сериализатор создания пользователя """
 
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name',
-            'last_name', 'password'
-        )
-
-    def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError(
-                'Пользователь USERNAME уже существует'
-            )
-        return validate_username_me(value)
-
-
-class CustomUserSerializer(UserSerializer):
-    """Серилизатор для кастомной модели пользователя."""
-
-    is_subscribed = SerializerMethodField(read_only=True)
-
-    class Meta:
-        abstract = True
-        model = User
-        fields = (
-            'email', 'id', 'username', 'first_name',
-            'last_name', 'is_subscribed'
-        )
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        return (request.user.is_authenticated
-                and obj.following.filter(user=request.user).exists())
+            'email', 'username', 'first_name',
+            'last_name', 'password')
 
 
 class SubscribeListSerializer(CustomUserSerializer):
@@ -103,8 +89,10 @@ class SubscribeListSerializer(CustomUserSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        limit = request.GET.get('recipes_limit', settings.LIMIT_DEFAULT)
-        recipes = obj.recipes.all()[:int(limit)]
+        limit = request.GET.get('recipes_limit')
+        recipes = obj.recipes.all()
+        if limit:
+            recipes = recipes[: int(limit)]
         serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
         return serializer.data
 

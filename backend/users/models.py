@@ -34,11 +34,6 @@ class CustomUser(AbstractUser):
         verbose_name='last_name',
     )
 
-    password = models.CharField(
-        max_length=LIMIT_PASSWORD,
-        verbose_name='password',
-    )
-
     class Meta:
         ordering = ['-id']
         verbose_name = 'пользователь'
