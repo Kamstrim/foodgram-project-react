@@ -15,6 +15,7 @@ from .utils import create_ingredients
 
 User = get_user_model()
 
+
 def validate_username_me(value):
     if value == 'me':
         raise ValidationError(
@@ -106,6 +107,7 @@ class SubscribeListSerializer(CustomUserSerializer):
         recipes = obj.recipes.all()[:int(limit)]
         serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
         return serializer.data
+
 
 class TagsSerializer(serializers.ModelSerializer):
     """Сериализация тегов."""
