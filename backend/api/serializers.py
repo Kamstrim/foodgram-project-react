@@ -15,8 +15,7 @@ from .utils import create_ingredients
 
 User = get_user_model()
 
-
-def validate_username(value):
+def validate_username_me(value):
     if value == 'me':
         raise ValidationError(
             'Имя пользователя "me" запрещено'
@@ -41,13 +40,11 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         )
 
     def validate_username(self, value):
-        if User.objects.filter(
-                username=value
-        ).exists():
+        if User.objects.filter(username=value).exists():
             raise serializers.ValidationError(
-                'Пользователь c данным Username уже существует'
+                'Пользователь USERNAME уже существует'
             )
-        return validate_username(value)
+        return validate_username_me(value)
 
 
 class CustomUserSerializer(UserSerializer):
@@ -59,22 +56,14 @@ class CustomUserSerializer(UserSerializer):
         abstract = True
         model = User
         fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed'
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed'
         )
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if request.user.is_authenticated:
-            following = obj.following.filter(
-                user=request.user
-            ).exists()
-            return following
-        return False
+        return (request.user.is_authenticated
+                and obj.following.filter(user=request.user).exists())
 
 
 class SubscribeListSerializer(CustomUserSerializer):
@@ -85,29 +74,18 @@ class SubscribeListSerializer(CustomUserSerializer):
 
     class Meta(CustomUserSerializer.Meta):
         fields = CustomUserSerializer.Meta.fields + (
-            'recipes_count',
-            'recipes',
-            'is_subscribed'
+            'recipes_count', 'recipes'
         )
         read_only_fields = (
-            'email',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed'
+            'email', 'username', 'first_name', 'last_name'
         )
 
     def validate(self, data):
         author_id = self.context.get(
             'request').parser_context.get('kwargs').get('id')
-        author = get_object_or_404(
-            User,
-            id=author_id
-        )
+        author = get_object_or_404(User, id=author_id)
         user = self.context.get('request').user
-        if user.follower.filter(
-                author=author_id
-        ).exists():
+        if user.follower.filter(author=author_id).exists():
             raise ValidationError(
                 detail='Подписка уже существует',
                 code=status.HTTP_400_BAD_REQUEST,
@@ -126,24 +104,8 @@ class SubscribeListSerializer(CustomUserSerializer):
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit', settings.LIMIT_DEFAULT)
         recipes = obj.recipes.all()[:int(limit)]
-        serializer = RecipeShortSerializer(
-            recipes,
-            many=True,
-            read_only=True
-        )
+        serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
         return serializer.data
-
-    def to_representation(self, instance):
-        self.fields['is_subscribed'].context = self.context
-        return super().to_representation(instance)
-
-    def to_internal_value(self, data):
-        """Переопределение метода для передачи дополнительного контекста."""
-        return super().to_internal_value({
-            **data,
-            'request': self.context.get('request')
-        })
-
 
 class TagsSerializer(serializers.ModelSerializer):
     """Сериализация тегов."""
