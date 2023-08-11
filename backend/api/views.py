@@ -11,8 +11,8 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeFilter
-from .models import (FavoriteRecipe, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Tag, Follow)
+from .models import (FavoriteRecipe, Follow, Ingredient, Recipe,
+                     RecipeIngredient, ShoppingCart, Tag)
 from .pagination import CustomPagination
 from .permissions import AuthorPermission
 from .serializers import (CreateRecipeSerializer, CustomUserSerializer,
