@@ -7,7 +7,6 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
-from ..users.models import LIMIT_USERNAME
 from .models import (MAX_VALUE, MIN_VALUE, FavoriteRecipe, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
 from .utils import create_ingredients
@@ -27,7 +26,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     """Сериализатор для создания пользователя."""
 
     username = serializers.RegexField(
-        max_length=LIMIT_USERNAME,
+        max_length=150,
         required=True,
         regex=r'^[\w.@+-]'
     )
