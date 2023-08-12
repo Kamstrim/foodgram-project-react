@@ -1,32 +1,25 @@
-import csv
+import json
 
-from api.models import Ingredient
 from django.core.management.base import BaseCommand
+
+from api.models import Ingredient, Tag
 
 
 class Command(BaseCommand):
-    help = 'Импорт данных из csv в модель Ingredient'
-
-    def add_arguments(self, parser):
-        parser.add_argument('--path', type=str, help='Путь к файлу')
+    help = ' Загрузить данные в модель ингредиентов '
 
     def handle(self, *args, **options):
-        print('Заполнение модели Ingredient из csv запущено.')
-        file_path = options['path'] + 'ingredients.csv'
-        with open(file_path, 'r') as csv_file:
-            reader = csv.reader(csv_file)
+        self.stdout.write(self.style.WARNING('Старт команды'))
+        with open('data/ingredients.json', encoding='utf-8',
+                  ) as data_file_ingredients:
+            ingredient_data = json.loads(data_file_ingredients.read())
+            for ingredients in ingredient_data:
+                Ingredient.objects.get_or_create(**ingredients)
 
-            for row in reader:
-                try:
-                    obj, created = Ingredient.objects.get_or_create(
-                        name=row[0],
-                        measurement_unit=row[1],
-                    )
-                    if not created:
-                        print(
-                            f'Ингредиент {obj} уже существует в базе данных.'
-                        )
-                except Exception as error:
-                    print(f'Ошибка в строке {row}: {error}')
+        with open('data/tags.json', encoding='utf-8',
+                  ) as data_file_tags:
+            tags_data = json.loads(data_file_tags.read())
+            for tags in tags_data:
+                Tag.objects.get_or_create(**tags)
 
-        print('Заполнение модели Ingredient завершено.')
+        self.stdout.write(self.style.SUCCESS('Данные загружены'))
