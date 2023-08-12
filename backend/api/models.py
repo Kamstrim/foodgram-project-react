@@ -61,7 +61,7 @@ class Tag(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['id']
         verbose_name = 'тег'
         verbose_name_plural = 'теги'
 
@@ -114,6 +114,7 @@ class Recipe(models.Model):
             MaxValueValidator(MAX_VALUE, f'Должно быть меньше {MAX_VALUE}')
         ],
         verbose_name='время приготовления',
+
     )
 
     class Meta:
@@ -143,7 +144,7 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveSmallIntegerField(
         validators=[
             MinValueValidator(MIN_VALUE, f'Должно быть больше {MIN_VALUE}'),
-            MaxValueValidator(MAX_VALUE, f'Должно быть меньше {MAX_VALUE}')
+            MaxValueValidator(MAX_VALUE, f'Должно быть меньше {MAX_VALUE}'),
         ],
         verbose_name='количество',
     )

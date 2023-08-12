@@ -24,9 +24,10 @@ from .utils import create_model_instance, delete_model_instance
 User = get_user_model()
 
 
-class UserViewSet(UserViewSet):
+class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete']
     pagination_class = CustomPagination
 
     @action(
@@ -45,14 +46,12 @@ class UserViewSet(UserViewSet):
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=user, author=author)
+            user.follower.get_or_create(author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            get_object_or_404(
-                Follow, user=user, author=author
-            ).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        return get_object_or_404(
+            Follow, user=user, author=author).delete() and Response(
+            status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -63,7 +62,9 @@ class UserViewSet(UserViewSet):
         queryset = User.objects.filter(following__user=user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscribeListSerializer(
-            pages, many=True, context={'request': request}
+            pages,
+            many=True,
+            context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
 
@@ -97,6 +98,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
+    serializer_class = CreateRecipeSerializer
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -104,7 +106,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return CreateRecipeSerializer
 
     @staticmethod
-    def send_message(self, ingredients):
+    def send_message(ingredients):
         shopping_list = 'Список покупок:\n'
         for ingredient in ingredients:
             shopping_list += (
@@ -123,72 +125,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['GET'],
+        methods=['GET']
     )
-    def download_shopping_list(self, request):
+    def download_shopping_cart(self, request):
         ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_list__user=self.request.user
+            recipe__shopping_list__user=request.user
         ).order_by(
-            'ingredient__name',
+            'ingredient__name'
         ).values(
             'ingredient__name',
-            'ingredient__measurement_unit',
-        ).annotate(
-            amount=Sum('amount')
-        )
+            'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
         return self.send_message(ingredients)
-
-    @staticmethod
-    def create_model_instance(self, request, recipe, serializer_class):
-        context = {'request': request}
-        data = {
-            'user': request.user.id,
-            'recipe': recipe.id
-        }
-        serializer = serializer_class(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @staticmethod
-    def delete_model_instance(
-            self,
-            request,
-            model_class,
-            recipe,
-            error_message
-    ):
-        instance = get_object_or_404(
-            model_class,
-            user=request.user.id,
-            recipe=recipe
-        )
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
-        methods=['POST', 'DELETE'],
+        methods=['POST'],
         permission_classes=[IsAuthenticated]
     )
-    def favorite(self, request, pk):
-        recipe = get_object_or_404(
-            Recipe,
-            id=pk
-        )
-        if request.method == 'POST':
-            return create_model_instance(request, recipe, FavoriteSerializer)
-        error_message = 'Данного рецепта нет в избранном'
-        return delete_model_instance(
-            request,
-            FavoriteRecipe,
-            recipe,
-            error_message
-        )
-
-    @staticmethod
-    def shopping_cart(self, request, recipe):
+    def shopping_cart(self, request, pk):
         context = {'request': request}
+        recipe = get_object_or_404(Recipe, id=pk)
         data = {
             'user': request.user.id,
             'recipe': recipe.id
@@ -198,21 +155,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @shopping_cart.mapping.delete
+    def destroy_shopping_cart(self, request, pk):
+        get_object_or_404(
+            ShoppingCart,
+            user=request.user.id,
+            recipe=get_object_or_404(Recipe, id=pk)
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=True,
-        methods=['POST'],
+        methods=['POST', 'DELETE'],
         permission_classes=[IsAuthenticated]
     )
-    def add_to_cart(self, request, pk):
+    def favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        return self.shopping_cart(request, recipe)
-
-    @add_to_cart.mapping.delete
-    def remove_from_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        return self.delete_model_instance(
+        if request.method == 'POST':
+            return create_model_instance(request, recipe, FavoriteSerializer)
+        error_message = 'Данного рецепта нет в избранном'
+        return delete_model_instance(
             request,
-            ShoppingCart,
+            FavoriteRecipe,
             recipe,
-            'Данного рецепта нет в корзине'
+            error_message
         )

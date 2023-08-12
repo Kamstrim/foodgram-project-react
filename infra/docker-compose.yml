@@ -1,5 +1,4 @@
 version: '3.3'
-
 volumes:
   pg_data:
   static:
@@ -9,9 +8,10 @@ services:
 
   db:
     image: postgres:13.10-alpine
-    env_file: .env
     volumes:
-        - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
+    env_file:
+      - .env
 
   backend:
     build: ../backend/
@@ -20,7 +20,8 @@ services:
       - media:/media/
     depends_on:
       - db
-    env_file: .env
+    env_file:
+      - .env
     restart: always
     container_name: foodgram_backend
 
