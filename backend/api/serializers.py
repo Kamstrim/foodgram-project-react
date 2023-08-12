@@ -6,11 +6,11 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
-from users.models import LIMIT_USERNAME, REGEX
 
 from .models import (MAX_VALUE, MIN_VALUE, FavoriteRecipe, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
 from .utils import create_ingredients
+from ..users.models import LIMIT_USERNAME
 
 User = get_user_model()
 
@@ -29,7 +29,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     username = serializers.RegexField(
         max_length=LIMIT_USERNAME,
         required=True,
-        regex=REGEX
+        regex=r'^[\w.@+-]'
     )
 
     class Meta:
