@@ -7,10 +7,10 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
+from ..users.models import LIMIT_USERNAME
 from .models import (MAX_VALUE, MIN_VALUE, FavoriteRecipe, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
 from .utils import create_ingredients
-from ..users.models import LIMIT_USERNAME
 
 User = get_user_model()
 
