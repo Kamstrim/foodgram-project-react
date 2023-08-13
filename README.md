@@ -5,6 +5,14 @@
 
 ## Инфраструктура
 
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Gunicorn](https://img.shields.io/badge/gunicorn-%298729.svg?style=for-the-badge&logo=gunicorn&logoColor=white)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+
+
 - Проект работает с СУБД PostgreSQL.
 - Проект запущен на сервере в Яндекс.Облаке в трёх контейнерах: nginx, PostgreSQL и Django+Gunicorn. Контейнер с проектом обновляется на Docker Hub.
 - В nginx настроена раздача статики, остальные запросы переадресуются в Gunicorn.
@@ -22,9 +30,10 @@
 
 
 ## Доступ к Админ панели
-Kamstrim
-12345
-
+```
+login: kamstrim
+password: 12345
+```
 ### Запуск проекта:
 1. Клонируйте проект:
 ```
