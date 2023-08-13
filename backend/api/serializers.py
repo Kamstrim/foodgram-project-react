@@ -13,6 +13,8 @@ from .utils import create_ingredients
 
 User = get_user_model()
 
+RECIPES_LIMIT = 10
+
 
 def validate_username_me(value):
     if value == 'me':
@@ -112,7 +114,7 @@ class SubscribeListSerializer(CustomUserSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        limit = request.GET.get('recipes_limit', 10)
+        limit = request.GET.get('recipes_limit', RECIPES_LIMIT)
         recipes = obj.recipes.all()[:int(limit)]
         serializer = RecipeShortSerializer(
             recipes,
